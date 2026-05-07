@@ -21,7 +21,6 @@ aidlc-workshop/
 │   ├── steering/                   # AIDLC 워크플로우 규칙
 │   │   └── aws-aidlc-rules/
 │   └── aws-aidlc-rule-details/     # 상세 규칙 문서
-├── AGENTS.md                       # Agent 가이드 (IDE용)
 └── README.md                       # 프로젝트 설명
 ```
 
