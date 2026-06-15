@@ -2,7 +2,7 @@ name: Sync AIDLC Rules
 
 on:
   schedule:
-    # 매일 UTC 00:00 (KST 09:00) 에 실행
+    # Runs daily at UTC 00:00 (KST 09:00)
     - cron: '0 0 * * *'
   workflow_dispatch:
 
@@ -15,10 +15,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout this repo
-        uses: actions/checkout@v5
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
 
       - name: Checkout upstream aidlc-workflows
-        uses: actions/checkout@v5
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
         with:
           repository: awslabs/aidlc-workflows
           path: upstream
@@ -36,16 +36,39 @@ jobs:
           rm -rf upstream
 
       - name: Create Pull Request
-        uses: peter-evans/create-pull-request@v7
+        id: cpr
+        uses: peter-evans/create-pull-request@5f6978faf089d4d20b00c7766989d076bb2fc7f1 # v8.1.1
         with:
           branch: chore/sync-aidlc-rules
           commit-message: "chore: sync AIDLC rules from awslabs/aidlc-workflows"
           title: "chore: sync AIDLC rules from upstream"
           body: |
-            awslabs/aidlc-workflows 원본 레포의 최신 변경사항을 자동 동기화합니다.
+            Automatically syncs the latest changes from the upstream awslabs/aidlc-workflows repo.
 
-            - 소스: https://github.com/awslabs/aidlc-workflows
-            - 대상 경로:
+            - Source: https://github.com/awslabs/aidlc-workflows
+            - Target paths:
               - `.kiro/steering/aws-aidlc-rules/`
               - `.kiro/aws-aidlc-rule-details/`
           labels: automated, aidlc-sync
+
+      - name: Auto-merge the sync PR
+        if: steps.cpr.outputs.pull-request-number != ''
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PR_NUMBER: ${{ steps.cpr.outputs.pull-request-number }}
+        run: |
+          # This repo only allows squash merges, so merge with --squash.
+          # A freshly created PR may briefly report UNKNOWN while GitHub
+          # computes mergeability asynchronously, so poll until it settles.
+          for i in $(seq 1 10); do
+            state=$(gh pr view "$PR_NUMBER" --json mergeStateStatus --jq '.mergeStateStatus')
+            echo "attempt $i: mergeStateStatus=$state"
+            [ "$state" != "UNKNOWN" ] && break
+            sleep 5
+          done
+
+          # With no branch protection the PR merges immediately. If an
+          # immediate merge is blocked (e.g. required checks), fall back to
+          # --auto so it merges once the conditions are met.
+          gh pr merge "$PR_NUMBER" --squash --delete-branch \
+            || gh pr merge "$PR_NUMBER" --squash --delete-branch --auto
