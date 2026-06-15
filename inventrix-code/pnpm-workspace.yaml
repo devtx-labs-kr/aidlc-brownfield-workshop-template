@@ -1,6 +1,10 @@
 packages:
   - packages/*
 
+overrides:
+  path-to-regexp: 0.1.13
+  qs: 6.15.2
+
 allowBuilds:
   bcrypt: true
   better-sqlite3: true
