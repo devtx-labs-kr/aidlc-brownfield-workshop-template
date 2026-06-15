@@ -1,10 +1,11 @@
 import { Router } from 'express';
 import db from '../db.js';
 import { authenticate, requireAdmin, AuthRequest } from '../middleware/auth.js';
+import { protectedRouteRateLimit } from '../middleware/rateLimit.js';
 
 const router = Router();
 
-router.get('/', authenticate, (req: AuthRequest, res) => {
+router.get('/', protectedRouteRateLimit, authenticate, (req: AuthRequest, res) => {
   let orders;
   if (req.user?.role === 'admin') {
     orders = db.prepare(`
@@ -19,7 +20,7 @@ router.get('/', authenticate, (req: AuthRequest, res) => {
   res.json(orders);
 });
 
-router.get('/:id', authenticate, (req: AuthRequest, res) => {
+router.get('/:id', protectedRouteRateLimit, authenticate, (req: AuthRequest, res) => {
   const order = db.prepare(`
     SELECT o.*, u.name as user_name, u.email as user_email 
     FROM orders o 
@@ -45,7 +46,7 @@ router.get('/:id', authenticate, (req: AuthRequest, res) => {
   res.json({ ...order, items });
 });
 
-router.post('/', authenticate, (req: AuthRequest, res) => {
+router.post('/', protectedRouteRateLimit, authenticate, (req: AuthRequest, res) => {
   const { items } = req.body;
 
   let subtotal = 0;
@@ -79,7 +80,7 @@ router.post('/', authenticate, (req: AuthRequest, res) => {
   res.status(201).json({ id: orderId, subtotal, gst, total, status: 'pending' });
 });
 
-router.patch('/:id/status', authenticate, requireAdmin, (req: AuthRequest, res) => {
+router.patch('/:id/status', protectedRouteRateLimit, authenticate, requireAdmin, (req: AuthRequest, res) => {
   const { status } = req.body;
   db.prepare('UPDATE orders SET status = ? WHERE id = ?').run(status, req.params.id);
   res.json({ id: req.params.id, status });

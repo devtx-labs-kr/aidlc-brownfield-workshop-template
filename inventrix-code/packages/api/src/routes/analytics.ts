@@ -1,10 +1,11 @@
 import { Router } from 'express';
 import db from '../db.js';
 import { authenticate, requireAdmin, AuthRequest } from '../middleware/auth.js';
+import { protectedRouteRateLimit } from '../middleware/rateLimit.js';
 
 const router = Router();
 
-router.get('/dashboard', authenticate, requireAdmin, (req: AuthRequest, res) => {
+router.get('/dashboard', protectedRouteRateLimit, authenticate, requireAdmin, (req: AuthRequest, res) => {
   const totalRevenue = db.prepare("SELECT COALESCE(SUM(total), 0) as revenue FROM orders WHERE status != 'cancelled'").get() as any;
   const totalOrders = db.prepare('SELECT COUNT(*) as count FROM orders').get() as any;
   const totalProducts = db.prepare('SELECT COUNT(*) as count FROM products').get() as any;
@@ -46,7 +47,7 @@ router.get('/dashboard', authenticate, requireAdmin, (req: AuthRequest, res) => 
   });
 });
 
-router.get('/inventory', authenticate, requireAdmin, (req: AuthRequest, res) => {
+router.get('/inventory', protectedRouteRateLimit, authenticate, requireAdmin, (req: AuthRequest, res) => {
   const inventory = db.prepare(`
     SELECT id, name, stock, price, 
     CASE 

@@ -2,10 +2,11 @@ import { Router } from 'express';
 import bcrypt from 'bcrypt';
 import db from '../db.js';
 import { generateToken } from '../middleware/auth.js';
+import { authRateLimit } from '../middleware/rateLimit.js';
 
 const router = Router();
 
-router.post('/login', (req, res) => {
+router.post('/login', authRateLimit, (req, res) => {
   const { email, password } = req.body;
 
   const user = db.prepare('SELECT * FROM users WHERE email = ?').get(email) as any;
@@ -22,7 +23,7 @@ router.post('/login', (req, res) => {
   });
 });
 
-router.post('/register', (req, res) => {
+router.post('/register', authRateLimit, (req, res) => {
   const { email, password, name } = req.body;
 
   const existing = db.prepare('SELECT id FROM users WHERE email = ?').get(email);

@@ -2,6 +2,7 @@ import { Router } from 'express';
 import db from '../db.js';
 import { authenticate, requireAdmin, AuthRequest } from '../middleware/auth.js';
 import { generateProductImage } from '../services/imageGenerator.js';
+import { protectedRouteRateLimit } from '../middleware/rateLimit.js';
 
 const router = Router();
 
@@ -18,7 +19,7 @@ router.get('/:id', (req, res) => {
   res.json(product);
 });
 
-router.post('/', authenticate, requireAdmin, (req: AuthRequest, res) => {
+router.post('/', protectedRouteRateLimit, authenticate, requireAdmin, (req: AuthRequest, res) => {
   const { name, description, price, stock, image_url } = req.body;
   const result = db.prepare('INSERT INTO products (name, description, price, stock, image_url) VALUES (?, ?, ?, ?, ?)').run(
     name, description, price, stock, image_url
@@ -26,7 +27,7 @@ router.post('/', authenticate, requireAdmin, (req: AuthRequest, res) => {
   res.status(201).json({ id: result.lastInsertRowid, name, description, price, stock, image_url });
 });
 
-router.put('/:id', authenticate, requireAdmin, (req: AuthRequest, res) => {
+router.put('/:id', protectedRouteRateLimit, authenticate, requireAdmin, (req: AuthRequest, res) => {
   const { name, description, price, stock, image_url } = req.body;
   db.prepare('UPDATE products SET name = ?, description = ?, price = ?, stock = ?, image_url = ? WHERE id = ?').run(
     name, description, price, stock, image_url, req.params.id
@@ -34,12 +35,12 @@ router.put('/:id', authenticate, requireAdmin, (req: AuthRequest, res) => {
   res.json({ id: req.params.id, name, description, price, stock, image_url });
 });
 
-router.delete('/:id', authenticate, requireAdmin, (req: AuthRequest, res) => {
+router.delete('/:id', protectedRouteRateLimit, authenticate, requireAdmin, (req: AuthRequest, res) => {
   db.prepare('DELETE FROM products WHERE id = ?').run(req.params.id);
   res.status(204).send();
 });
 
-router.post('/generate-image', authenticate, requireAdmin, async (req: AuthRequest, res) => {
+router.post('/generate-image', protectedRouteRateLimit, authenticate, requireAdmin, async (req: AuthRequest, res) => {
   try {
     const { productName, description } = req.body;
     const imageUrl = await generateProductImage(productName, description);
