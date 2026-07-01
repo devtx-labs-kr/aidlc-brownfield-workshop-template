@@ -13,26 +13,8 @@ const __dirname = path.dirname(__filename);
 
 const app = express();
 const PORT = process.env.PORT || 3000;
-const configuredOrigins = (process.env.CORS_ORIGIN || '')
-  .split(',')
-  .map(origin => origin.trim())
-  .filter(Boolean);
-const fallbackOriginPattern = /^https?:\/\/(localhost|127\.0\.0\.1|\[::1\]|(?:\d{1,3}\.){3}\d{1,3})(:\d{1,5})?$/;
 
-app.use(cors({
-  origin: (origin, callback) => {
-    const isAllowedOrigin = !origin ||
-      (configuredOrigins.length > 0
-        ? configuredOrigins.includes(origin)
-        : fallbackOriginPattern.test(origin));
-
-    if (isAllowedOrigin) {
-      callback(null, true);
-      return;
-    }
-    callback(new Error('Not allowed by CORS'));
-  }
-}));
+app.use(cors());
 app.use(express.json());
 app.use('/images', express.static(path.join(__dirname, '../public/images')));
 

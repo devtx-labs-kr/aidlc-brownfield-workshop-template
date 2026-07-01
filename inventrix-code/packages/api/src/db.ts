@@ -49,15 +49,8 @@ export const initDb = () => {
   const userCount = db.prepare('SELECT COUNT(*) as count FROM users').get() as { count: number };
   
   if (userCount.count === 0) {
-    const adminInitialPassword = process.env.ADMIN_INITIAL_PASSWORD;
-    const customerInitialPassword = process.env.CUSTOMER_INITIAL_PASSWORD;
-
-    if (!adminInitialPassword || !customerInitialPassword) {
-      throw new Error('ADMIN_INITIAL_PASSWORD and CUSTOMER_INITIAL_PASSWORD must be set when initializing the database');
-    }
-
-    const adminPassword = bcrypt.hashSync(adminInitialPassword, 12);
-    const customerPassword = bcrypt.hashSync(customerInitialPassword, 12);
+    const adminPassword = bcrypt.hashSync('admin123', 10);
+    const customerPassword = bcrypt.hashSync('customer123', 10);
     
     db.prepare('INSERT INTO users (email, password, name, role) VALUES (?, ?, ?, ?)').run(
       'admin@inventrix.com', adminPassword, 'Admin User', 'admin'
