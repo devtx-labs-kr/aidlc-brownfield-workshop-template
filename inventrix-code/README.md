@@ -48,11 +48,6 @@ aws configure
 ### Development
 
 ```bash
-export JWT_SECRET=replace_with_a_32+_character_secret
-export ADMIN_INITIAL_PASSWORD=replace_with_strong_admin_password
-export CUSTOMER_INITIAL_PASSWORD=replace_with_strong_customer_password
-export CORS_ORIGIN=http://localhost:5173
-
 pnpm dev
 ```
 
@@ -73,10 +68,10 @@ chmod +x deploy.sh
 ./deploy.sh
 ```
 
-## Initial Users
+## Default Users
 
-- **Admin**: admin@inventrix.com / value of `ADMIN_INITIAL_PASSWORD`
-- **Customer**: customer@inventrix.com / value of `CUSTOMER_INITIAL_PASSWORD`
+- **Admin**: admin@inventrix.com / admin123
+- **Customer**: customer@inventrix.com / customer123
 
 ## Project Structure
 

@@ -191,27 +191,11 @@ pnpm install
 # Build application
 pnpm build
 
-# Generate runtime secrets
-JWT_SECRET=$(openssl rand -hex 32)
-ADMIN_INITIAL_PASSWORD=$(openssl rand -base64 24 | tr -dc 'A-Za-z0-9' | head -c 20)
-CUSTOMER_INITIAL_PASSWORD=$(openssl rand -base64 24 | tr -dc 'A-Za-z0-9' | head -c 20)
-
 # Start API with PM2
 cd packages/api
-JWT_SECRET="$JWT_SECRET" \
-ADMIN_INITIAL_PASSWORD="$ADMIN_INITIAL_PASSWORD" \
-CUSTOMER_INITIAL_PASSWORD="$CUSTOMER_INITIAL_PASSWORD" \
-pm2 start dist/index.js --name inventrix-api --update-env
+pm2 start dist/index.js --name inventrix-api
 pm2 save
 pm2 startup | tail -1 | bash
-
-cat > /home/ec2-user/inventrix-credentials.txt <<CREDS
-ADMIN_EMAIL=admin@inventrix.com
-ADMIN_INITIAL_PASSWORD=$ADMIN_INITIAL_PASSWORD
-CUSTOMER_EMAIL=customer@inventrix.com
-CUSTOMER_INITIAL_PASSWORD=$CUSTOMER_INITIAL_PASSWORD
-CREDS
-chmod 600 /home/ec2-user/inventrix-credentials.txt
 ENDSSH
 
 # Configure nginx with HTTPS
@@ -271,7 +255,8 @@ echo "SSH Command: ssh -i ${KEY_NAME}.pem ec2-user@$PUBLIC_IP"
 echo ""
 echo "Note: Your browser will show a security warning due to the self-signed certificate."
 echo ""
-echo "Initial credentials (saved on server at ~/inventrix-credentials.txt):"
-ssh -i ${KEY_NAME}.pem -o StrictHostKeyChecking=no ec2-user@$PUBLIC_IP "cat ~/inventrix-credentials.txt"
+echo "Default credentials:"
+echo "  Admin: admin@inventrix.com / admin123"
+echo "  Customer: customer@inventrix.com / customer123"
 echo ""
 echo "Deployment info saved to setup_info.txt"
