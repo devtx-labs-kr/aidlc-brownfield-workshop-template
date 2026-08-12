@@ -1,6 +1,10 @@
 #!/bin/bash
 set -e
 
+# Always operate from the script's own directory, regardless of where it is invoked from.
+# This keeps the key pair (.pem), tar upload, and setup_info.txt all relative to the same path.
+cd "$(dirname "${BASH_SOURCE[0]}")"
+
 echo "=== Inventrix AWS Deployment Script ==="
 echo ""
 
@@ -173,7 +177,6 @@ done
 
 # Upload application code
 echo "Uploading application code..."
-cd "$(dirname "$0")"
 tar czf /tmp/inventrix.tar.gz --exclude=node_modules --exclude=dist --exclude=.git --exclude=inventrix.db .
 scp -i ${KEY_NAME}.pem -o StrictHostKeyChecking=no /tmp/inventrix.tar.gz ec2-user@$PUBLIC_IP:~/
 rm /tmp/inventrix.tar.gz

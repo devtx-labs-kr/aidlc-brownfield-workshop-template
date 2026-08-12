@@ -1,6 +1,10 @@
 #!/bin/bash
 set -e
 
+# Always operate from the script's own directory so setup_info.txt and the .pem
+# key file are resolved consistently, regardless of the invocation directory.
+cd "$(dirname "${BASH_SOURCE[0]}")"
+
 echo "=== Inventrix AWS Resource Cleanup Script ==="
 echo ""
 
